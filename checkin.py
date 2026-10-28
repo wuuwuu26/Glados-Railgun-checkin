@@ -109,8 +109,8 @@ class Config:
     """默认是否输出详细响应"""
     DEFAULT_VERBOSE = False
 
-    """默认域名"""
-    DOMAINS = ["glados.cloud", "railgun.info"]
+    """默认域名（本 fork 的账号位于 glados.space，故只签到该域名）"""
+    DOMAINS = ["glados.space"]
 
     """兑换计划列表"""
     EXCHANGE_PLANS = {
@@ -640,13 +640,17 @@ class Checker:
 
             if self.config.exchange_plan in self.config.EXCHANGE_PLANS:
                 required_points = self.config.EXCHANGE_PLANS[self.config.exchange_plan]
-                self._log(
-                    cookie_idx,
-                    domain,
-                    LogEmoji.EXCHANGE,
-                    f"开始兑换 {self.config.exchange_plan} (需要 {required_points} 积分)",
-                )
-                result.exchange = api.exchange(cookie, self.config.exchange_plan, required_points)
+                if points_num < required_points:
+                    result.exchange = f"积分不足({points_num}/{required_points})，跳过兑换"
+                    self._log(cookie_idx, domain, LogEmoji.INFO, result.exchange)
+                else:
+                    self._log(
+                        cookie_idx,
+                        domain,
+                        LogEmoji.EXCHANGE,
+                        f"开始兑换 {self.config.exchange_plan} (需要 {required_points} 积分)",
+                    )
+                    result.exchange = api.exchange(cookie, self.config.exchange_plan, required_points)
             else:
                 result.exchange = "未配置兑换计划，跳过自动兑换"
                 self._log(cookie_idx, domain, LogEmoji.INFO, "未配置兑换计划，跳过自动兑换")
